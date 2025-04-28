@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.rentnotification.mapper.TenantMapper">
-    <update id="updateFcmToken" parameterType="com.rentnotification.service.TenantUpdate">
+<mapper namespace="com.rentnotification.repository.TenantRepository">
+    <select id="getTenantsForReminders" resultType="com.rentnotification.entity.Tenant">
+        SELECT id, name, fcm_token, due_date, rent_amount, last_payment_date
+        FROM tenants
+        WHERE fcm_token IS NOT NULL
+    </select>
+    <update id="updateFcmToken">
         UPDATE tenants
         SET fcm_token = #{fcmToken}
         WHERE id = #{id}

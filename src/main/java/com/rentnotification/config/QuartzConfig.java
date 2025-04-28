@@ -1,32 +1,35 @@
 package com.rentnotification.config;
 
 import com.rentnotification.job.RentReminderJob;
-import org.quartz.JobDetail;
+import org.quartz.*;
+import org.quartz.spi.JobFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.scheduling.quartz.JobDetailFactoryBean;
-import org.springframework.scheduling.quartz.CronTriggerFactoryBean;
+
+import java.util.Date;
 
 @Configuration
 public class QuartzConfig {
+
     @Bean
-    public JobDetailFactoryBean rentReminderJobDetail() {
-        JobDetailFactoryBean factory = new JobDetailFactoryBean();
-        factory.setJobClass(RentReminderJob.class);
-        factory.setDurability(true);
-        return factory;
+    public JobDetail rentReminderJobDetail() {
+        return JobBuilder.newJob(RentReminderJob.class)
+                .withIdentity("rentReminderJob")
+                .storeDurably()
+                .build();
     }
 
     @Bean
-    public CronTriggerFactoryBean rentReminderTrigger(JobDetail rentReminderJobDetail) {
-        CronTriggerFactoryBean factory = new CronTriggerFactoryBean();
-        factory.setJobDetail(rentReminderJobDetail);
-        factory.setCronExpression("0 0 9 * * ?"); // Run daily at 9 AM
-        return factory;
+    public Trigger rentReminderTrigger() {
+        return TriggerBuilder.newTrigger()
+                .forJob(rentReminderJobDetail())
+                .withIdentity("rentReminderTrigger")
+                .startAt(new Date(System.currentTimeMillis() + 10_000)) // 10 seconds from now
+                .build();
     }
 
     @Bean
-    public AutoWiringSpringBeanJobFactory jobFactory() {
+    public JobFactory jobFactory() {
         return new AutoWiringSpringBeanJobFactory();
     }
 }

@@ -8,7 +8,6 @@ import org.quartz.JobExecutionContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDate;
 import java.util.List;
 
 @Component
@@ -21,27 +20,15 @@ public class RentReminderJob implements Job {
     @Override
     public void execute(JobExecutionContext context) {
         List<Tenant> tenants = tenantRepository.getTenantsForReminders();
-        LocalDate today = LocalDate.now();
-
         for (Tenant tenant : tenants) {
             try {
-                String reminderType;
-                if (tenant.getDueDate().equals(today.plusDays(1))) {
-                    reminderType = "BEFORE_DUE";
-                } else if (tenant.getLastPaymentDate() == null && tenant.getDueDate().equals(today.minusDays(3))) {
-                    reminderType = "THREE_DAYS_PAST_DUE";
-                } else if (tenant.getLastPaymentDate() == null && tenant.getDueDate().equals(today.minusDays(7))) {
-                    reminderType = "SEVEN_DAYS_PAST_DUE";
-                } else {
-                    continue;
-                }
-
+                // Send notification for testing, ignore due_date conditions
                 notificationService.sendRentReminder(
                         tenant.getFcmToken(),
                         tenant.getName(),
                         tenant.getRentAmount(),
                         tenant.getDueDate().toString(),
-                        reminderType
+                        "TEST_REMINDER"
                 );
             } catch (Exception e) {
                 System.err.println("Failed to send reminder to " + tenant.getName() + ": " + e.getMessage());
